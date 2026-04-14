@@ -23,6 +23,7 @@
   ],
   "scripts": {
     "build": "tsdown",
+    "build:exe": "bun build --compile src/main.ts --outfile copilot-api",
     "dev": "bun run --watch ./src/main.ts",
     "knip": "knip-bun",
     "lint": "eslint --cache",
