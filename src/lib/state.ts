@@ -15,6 +15,9 @@ export interface State {
   // Rate limiting configuration
   rateLimitSeconds?: number
   lastRequestTimestamp?: number
+
+  // Models that need the /responses endpoint instead of /chat/completions
+  responsesEndpointModels: Set<string>
 }
 
 export const state: State = {
@@ -22,4 +25,5 @@ export const state: State = {
   manualApprove: false,
   rateLimitWait: false,
   showToken: false,
+  responsesEndpointModels: new Set(),
 }

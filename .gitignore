@@ -10,5 +10,8 @@ node_modules/
 # eslint cache
 .eslintcache
 
+# claude code
+.claude/
+
 # build output
 dist/

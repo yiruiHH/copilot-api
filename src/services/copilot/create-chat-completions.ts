@@ -5,9 +5,19 @@ import { copilotHeaders, copilotBaseUrl } from "~/lib/api-config"
 import { HTTPError } from "~/lib/error"
 import { state } from "~/lib/state"
 
+import { createViaResponses } from "./create-responses"
+
 export const createChatCompletions = async (
   payload: ChatCompletionsPayload,
 ) => {
+  // If this model is known to need the /responses endpoint, use it directly
+  if (state.responsesEndpointModels.has(payload.model)) {
+    consola.debug(
+      `Model ${payload.model} is cached as responses-only, routing to /responses`,
+    )
+    return createViaResponses(payload)
+  }
+
   if (!state.copilotToken) throw new Error("Copilot token not found")
 
   const enableVision = payload.messages.some(
@@ -35,6 +45,26 @@ export const createChatCompletions = async (
   })
 
   if (!response.ok) {
+    // Check if the model needs the /responses endpoint instead
+    const errorBody = await response.text()
+    let errorCode: string | undefined
+    try {
+      const parsed = JSON.parse(errorBody) as {
+        error?: { code?: string }
+      }
+      errorCode = parsed.error?.code
+    } catch {
+      // Not JSON, ignore
+    }
+
+    if (errorCode === "unsupported_api_for_model") {
+      consola.info(
+        `Model ${payload.model} not supported on /chat/completions, retrying with /responses`,
+      )
+      state.responsesEndpointModels.add(payload.model)
+      return createViaResponses(payload)
+    }
+
     consola.error("Failed to create chat completions", response)
     throw new HTTPError("Failed to create chat completions", response)
   }

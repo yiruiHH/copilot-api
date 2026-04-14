@@ -61,7 +61,7 @@ export async function runServer(options: RunServerOptions): Promise<void> {
   await cacheModels()
 
   consola.info(
-    `Available models: \n${state.models?.data.map((model) => `- ${model.id}`).join("\n")}`,
+    `Available models: \n${state.models?.data.map((model) => `- ${model.id} (type: ${model.capabilities.type})`).join("\n")}`,
   )
 
   const serverUrl = `http://localhost:${options.port}`
